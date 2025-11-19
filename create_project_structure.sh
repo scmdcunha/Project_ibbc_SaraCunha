@@ -1,8 +1,15 @@
 #!/bin/bash
 
+# Check if user passed a project project_name
+if [ -z "$1" ]; then
+    echo "Please provide a project name as an argument."
+    echo "Usage: $0 <project_name>"
+    exit 1
+fi
+
 # variables
 base_dir="$HOME"
-project_name="Project_ibbc_SaraCunha"
+project_name="$1"
 project_dir="$base_dir/$project_name"
 
 # create project structure if it doesn't exist
