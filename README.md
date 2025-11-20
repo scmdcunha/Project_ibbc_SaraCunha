@@ -3,11 +3,11 @@
 This repository provides a small, portable pipeline for quality-control and trimming of paired-end FASTQ sequencing data.
 The workflow includes:
 
-**FastQC** on raw reads
-**MultiQC** summarising raw QC
-**Trimmomatic** for trimming/cleaning
-**FastQC** on trimmed reads
-**MultiQC** final summary
+- **FastQC** on raw reads
+- **MultiQC** summarising raw QC
+- **Trimmomatic** for trimming/cleaning
+- **FastQC** on trimmed reads
+- **MultiQC** final summary
 
 All steps are automated through 'run_pipeline.sh'.
 
