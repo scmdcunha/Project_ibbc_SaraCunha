@@ -4,27 +4,41 @@ IFS=$'\n\t'
 
 # config
 
+# Check number of args
+if [[ "$#" -ne 2 ]]; then
+    echo "Usage: $0 <input_fastq_dir> <output_fastqc_dir>"
+    exit 1
+fi
+
 env_name="tools_qc"
-data_dir="01_data"
-output_dir="03_results/fastqc_raw"
+data_dir="$1"
+output_dir="$2"
 log_dir="04_logs/fastqc"
 
 mkdir -p "$output_dir"
 mkdir -p "$log_dir"
 
-log_file="${log_dir}/fastqc_raw_$(date +%Y%m%d%H%M%S).log"
+timestamp=$(date +%Y%m%d%H%M%S)
+log_file="${log_dir}/fastqc_$(basename "$output_dir")_${timestamp}.log"
+
 exec > >(tee "$log_file") 2>&1
 
 # Activate conda environment
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate "$env_name"
 
-echo "Running FastQC"
+echo "Running FastQC on: $data_dir"
+echo "Saving output to: $output_dir"
 
 # Loop over samples and run FastQC
-for R1 in "$data_dir"/*_1_aaa.fastq.gz; do
-    sample=$(basename "$R1" | sed 's/_1_aaa.fastq.gz//')
-    R2="${data_dir}/${sample}_2_aaa.fastq.gz"
+for R1 in "$data_dir"/*_1*.fastq.gz; do
+    sample=$(basename "$R1" | sed 's/_1.*fastq.gz//')
+
+    R2=$(ls "$data_dir"/"${sample}"_2*.fastq.gz 2>/dev/null || true)
+    if [[ ! -f "$R2" ]]; then
+        echo "Skipping sample $sample (R2 not found)"
+        continue
+    fi
 
     echo "Running FastQC on sample $sample"
     fastqc -o "$output_dir" "$R1" "$R2"
