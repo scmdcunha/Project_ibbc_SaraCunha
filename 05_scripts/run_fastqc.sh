@@ -7,7 +7,7 @@ IFS=$'\n\t'
 env_name="tools_qc"
 data_dir="01_data"
 output_dir="03_results/fastqc_raw"
-log_dir="04_logs"
+log_dir="04_logs/fastqc"
 
 mkdir -p "$output_dir"
 mkdir -p "$log_dir"
@@ -18,6 +18,8 @@ exec > >(tee "$log_file") 2>&1
 # Activate conda environment
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate "$env_name"
+
+echo "Running FastQC"
 
 # Loop over samples and run FastQC
 for R1 in "$data_dir"/*_1_aaa.fastq.gz; do
