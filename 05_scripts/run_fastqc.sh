@@ -34,7 +34,8 @@ echo "Saving output to: $output_dir"
 for R1 in "$data_dir"/*_1_*.fastq.gz; do
     sample=$(basename "$R1" | sed 's/_1_.*fastq.gz//')
 
-    R2=$(ls "$data_dir"/"${sample}"_2_*.fastq.gz 2>/dev/null || true)
+    # only pick the paired trimmed R2
+    R2=$(ls "$data_dir"/"${sample}"_2_trimmed.fastq.gz 2>/dev/null || true)
 
 
     if [[ -z "$R2" ]]; then
@@ -43,6 +44,7 @@ for R1 in "$data_dir"/*_1_*.fastq.gz; do
     fi
 
     echo "Running FastQC on sample $sample"
+    echo "DEBUG: fastqc -o \"$output_dir\" \"$R1\" \"$R2\""
     fastqc -o "$output_dir" "$R1" "$R2"
 done
 

@@ -36,7 +36,8 @@ for R1 in "$data_dir"/*_1*.fastq.gz; do
     sample=$(basename "$R1" | sed 's/_1.*fastq.gz//')
 
     # detect R2
-    R2=$(ls "$data_dir"/"${sample}"_2*.fastq.gz 2>/dev/null || true)
+    R2=$(ls "$data_dir"/"${sample}"_2_*.fastq.gz 2>/dev/null || true)
+
 
     if [[ -z "$R2" ]]; then
         echo "Skipping sample $sample (R2 not found)"
