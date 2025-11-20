@@ -31,10 +31,12 @@ echo "Running FastQC on: $data_dir"
 echo "Saving output to: $output_dir"
 
 # Loop over samples and run FastQC
-for R1 in "$data_dir"/*_1*.fastq.gz; do
-    sample=$(basename "$R1" | sed 's/_1.*fastq.gz//')
+for R1 in "$data_dir"/*_1_*.fastq.gz; do
+    sample=$(basename "$R1" | sed 's/_1_.*fastq.gz//')
 
-    R2=$(ls "$data_dir"/"${sample}"_2*.fastq.gz 2>/dev/null || true)
+    R2=$(ls "$data_dir"/"${sample}"_2_*.fastq.gz 2>/dev/null || true)
+
+
     if [[ -z "$R2" ]]; then
         echo "Skipping sample $sample (R2 not found)"
         continue
