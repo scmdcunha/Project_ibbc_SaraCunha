@@ -12,7 +12,7 @@ fi
 echo "Creating environment ${env_name}..."
 
 # create environment
-conda create -n ${env_name} \
+conda create -y -n ${env_name} \
     fastqc=0.12.1 \
     trimmomatic=0.40 \
     multiqc=1.31

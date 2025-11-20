@@ -1,4 +1,0 @@
-#!/bin/bash
-
-# Pull Docker images
-docker pull
