@@ -4,6 +4,12 @@ IFS=$'\n\t'
 
 echo "Starting pipeline..."
 
+# Check FASTQ files
+bash 05_scripts/check_fastq.sh 01_data || {
+    echo "FASTQ check failed. Pipeline stopped."
+    exit 1
+}
+
 # 1. Running fastqc in raw data
 echo "Step 1: FastQC RAW"
 bash 05_scripts/run_fastqc.sh 01_data 03_results/fastqc_raw
