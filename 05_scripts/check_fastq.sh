@@ -18,3 +18,9 @@ exec > >(tee -a "$log_file") 2>&1
 
 echo "Checking FASTQ files in $fastq_dir"
 echo "Directory: $fastq_dir"
+echo ""
+
+# Check if fastq files exist
+fastq_count=$(ls "${fastq_dir}"/*.fastq.gz 2>/dev/null | wc -l || true)
+
+echo "Number of FASTQ files: $fastq_count"
