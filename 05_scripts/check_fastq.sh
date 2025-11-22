@@ -23,4 +23,42 @@ echo ""
 # Check if fastq files exist
 fastq_count=$(ls "${fastq_dir}"/*.fastq.gz 2>/dev/null | wc -l || true)
 
+if [[ $fastq_count -eq 0 ]]; then
+    echo "No FASTQ files found in $fastq_dir"
+    exit 1
+fi
+
 echo "Number of FASTQ files: $fastq_count"
+echo ""
+
+# Identify samples (prefix before _1_)
+samples=0
+errors=0
+
+echo "Checking sample pairs:"
+echo ""
+
+for R1 in "${fastq_dir}"/*_1_*.fastq.gz; do
+    [[ -e "$R1" ]] || continue
+
+    samples=$((samples+1))
+    base=$(basename "$R1")
+
+    sample=$(echo "$base" | sed 's/_1_.*fastq.gz//')
+
+    suffix=$(echo "$base" | sed 's/.*_1_\(.*\)\.fastq\.gz/\1/')
+
+    R2="${fastq_dir}/${sample}_2_${suffix}.fastq.gz"
+
+    echo "Sample: $sample"
+    echo "R1: $base"
+
+    if [[ -f "$R2" ]]; then
+        echo "  R2: $(basename "$R2") (OK)"
+    else
+        echo "  R2: MISSING ❌"
+        errors=$((errors+1))
+    fi
+
+    echo ""
+done
