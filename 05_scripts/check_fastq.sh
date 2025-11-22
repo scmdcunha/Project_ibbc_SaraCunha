@@ -56,9 +56,22 @@ for R1 in "${fastq_dir}"/*_1_*.fastq.gz; do
     if [[ -f "$R2" ]]; then
         echo "  R2: $(basename "$R2") (OK)"
     else
-        echo "  R2: MISSING ❌"
+        echo "  R2: Missing! File not found."
         errors=$((errors+1))
     fi
 
     echo ""
 done
+
+echo "Summary:"
+echo "Samples: $samples"
+echo "Missing pairs: $errors"
+
+if [[ $errors -gt 0 ]]; then
+    echo "Some samples have missing R2 files."
+    exit 2
+else
+    echo "All samples have both R1 and R2 files."
+fi
+
+echo ""
