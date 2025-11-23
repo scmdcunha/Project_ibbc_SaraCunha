@@ -2,53 +2,81 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# Check number of args (2 or 3)
+# Check args
 if [[ "$#" -lt 2 || "$#" -gt 3 ]]; then
     echo "Usage: $0 <input_fastq_dir> <output_fastqc_dir> [r2_pattern]"
-    echo "  r2_pattern example: '_2_*.fastq.gz'  or  '_2_trimmed.fastq.gz'"
     exit 1
 fi
 
 env_name="tools_qc"
 data_dir="$1"
 output_dir="$2"
-# optional third arg: pattern for R2 suffix (must include leading underscore if relevant)
-r2_pattern="${3:-_2_*.fastq.gz}"
+r2_pattern="${3:-}"
 
 log_dir="04_logs/fastqc"
 mkdir -p "$output_dir" "$log_dir"
 
 timestamp=$(date +%Y%m%d%H%M%S)
 log_file="${log_dir}/fastqc_$(basename "$output_dir")_${timestamp}.log"
-
 exec > >(tee "$log_file") 2>&1
 
-# Activate conda environment
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate "$env_name"
 
+# Function to detect R2 from R1
+detect_R2_from_R1() {
+    local r1="$1"
+
+    if [[ "$r1" =~ R1 ]]; then
+        echo "${r1/R1/R2}"
+    elif [[ "$r1" =~ _1_ ]]; then
+        echo "${r1/_1_/_2_}"
+    elif [[ "$r1" =~ _1 ]]; then
+        echo "${r1/_1/_2}"
+    elif [[ "$r1" =~ -1 ]]; then
+        echo "${r1/-1/-2}"
+    else
+        echo ""
+    fi
+}
+
 echo "Running FastQC on: $data_dir"
 echo "Saving output to: $output_dir"
-echo "R2 pattern: $r2_pattern"
+echo ""
 
-# Loop over samples and run FastQC
-for R1 in "$data_dir"/*_1_*.fastq.gz; do
-    [[ -e "$R1" ]] || continue
+# Main loop -ok detect ANY valid R1 pattern
+for R1 in "$data_dir"/*.fastq.gz; do
 
-    sample=$(basename "$R1" | sed 's/_1_.*fastq.gz//')
-
-    # find the first matching R2 for this sample using the provided pattern
-    R2=$(ls ${data_dir}/${sample}${r2_pattern} 2>/dev/null | head -n 1 || true)
-
-    if [[ -z "$R2" ]]; then
-        echo "Skipping sample $sample (R2 not found with pattern ${r2_pattern})"
+    # Only process files with an R1-like pattern
+    if [[ "$R1" =~ R1 ]] || [[ "$R1" =~ _1 ]] || [[ "$R1" =~ -1 ]]; then
+        :
+    else
         continue
     fi
 
-    echo "Running FastQC on sample $sample"
-    echo "DEBUG: fastqc -o \"$output_dir\" \"$R1\" \"$R2\""
+    R2=$(detect_R2_from_R1 "$R1")
+
+    if [[ -z "$R2" || ! -f "$R2" ]]; then
+        echo "Skipping $(basename "$R1") (no matching R2 found)"
+        continue
+    fi
+
+    echo "Running FastQC on:"
+    echo "  R1 = $(basename "$R1")"
+    echo "  R2 = $(basename "$R2")"
+
     fastqc -o "$output_dir" "$R1" "$R2"
 done
 
-# Deactivate conda environment
+# Now check unpaired reads
+
+echo ""
+echo "Running FastQC on unpaired reads (if any)..."
+
+for f in "$data_dir"/*unpaired*.fastq.gz; do
+    [[ -e "$f" ]] || continue
+    echo "  Unpaired: $(basename "$f")"
+    fastqc -o "$output_dir" "$f"
+done
+
 conda deactivate
