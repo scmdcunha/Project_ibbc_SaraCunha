@@ -42,9 +42,9 @@ After creating the structure, copy or move your paired-end FASTQ files into:
 
 The pipeline uses a dedicated environment containing:
 
-- FastQC
-- Trimmomatic
-- MultiQC
+- FastQC 0.12.1
+- Trimmomatic 0.40
+- MultiQC 1.31
 
 Create it using:
 
