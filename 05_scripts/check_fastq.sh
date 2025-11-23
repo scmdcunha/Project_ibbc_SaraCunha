@@ -93,7 +93,7 @@ for R1 in "$fastq_dir"/*.fastq.gz; do
     echo "  R1: $base_R1"
 
     if [[ -z "$R2" || ! -f "$R2" ]]; then
-        echo "  R2: MISSING ❌"
+        echo "  R2: MISSING"
         errors=$((errors+1))
     else
         echo "  R2: $(basename "$R2") (OK)"
@@ -104,14 +104,14 @@ for R1 in "$fastq_dir"/*.fastq.gz; do
     if validate_fastq "$R1"; then
         echo "    R1 structure: OK"
     else
-        echo "    R1 structure: INVALID ❌"
+        echo "    R1 structure: INVALID FASTQ STRUCTURE"
         errors=$((errors+1))
     fi
 
     if [[ -f "$R2" ]] && validate_fastq "$R2"; then
         echo "    R2 structure: OK"
     elif [[ -f "$R2" ]]; then
-        echo "    R2 structure: INVALID ❌"
+        echo "    R2 structure: INVALID FASTQ STRUCTURE"
         errors=$((errors+1))
     fi
 

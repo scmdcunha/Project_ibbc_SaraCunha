@@ -95,7 +95,7 @@ for R1 in "$data_dir"/*.fastq.gz; do
         "$out_R1" "$out_unp_R1" \
         "$out_R2" "$out_unp_R2" \
         ILLUMINACLIP:"$ADAPTERS":2:30:10 \
-        HEADCROP: 12 \
+        HEADCROP:12 \
         LEADING:3 \
         TRAILING:3 \
         SLIDINGWINDOW:4:20 \
