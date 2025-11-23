@@ -3,15 +3,14 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # Check args
-if [[ "$#" -lt 2 || "$#" -gt 3 ]]; then
-    echo "Usage: $0 <input_fastq_dir> <output_fastqc_dir> [r2_pattern]"
+if [[ "$#" -ne 2 ]]; then
+    echo "Usage: $0 <input_fastq_dir> <output_fastqc_dir>"
     exit 1
 fi
 
 env_name="tools_qc"
 data_dir="$1"
 output_dir="$2"
-r2_pattern="${3:-}"
 
 log_dir="04_logs/fastqc"
 mkdir -p "$output_dir" "$log_dir"
@@ -40,14 +39,20 @@ detect_R2_from_R1() {
     fi
 }
 
-echo "Running FastQC on: $data_dir"
-echo "Saving output to: $output_dir"
+echo ""
+echo "Running FastQC on paired reads"
+echo "Input dir:  $data_dir"
+echo "Output dir: $output_dir"
 echo ""
 
-# Main loop -ok detect ANY valid R1 pattern
+# Running fastqc on paired reads
 for R1 in "$data_dir"/*.fastq.gz; do
 
-    # Only process files with an R1-like pattern
+    # Only treat files with R1 pattern
+    if [[ "$R1" =~ unpaired ]]; then
+        continue
+    fi
+
     if [[ "$R1" =~ R1 ]] || [[ "$R1" =~ _1 ]] || [[ "$R1" =~ -1 ]]; then
         :
     else
@@ -57,26 +62,17 @@ for R1 in "$data_dir"/*.fastq.gz; do
     R2=$(detect_R2_from_R1 "$R1")
 
     if [[ -z "$R2" || ! -f "$R2" ]]; then
-        echo "Skipping $(basename "$R1") (no matching R2 found)"
+        echo "Skipping $(basename "$R1"): missing R2 pair"
         continue
     fi
 
-    echo "Running FastQC on:"
+    echo "FASTQC on:"
     echo "  R1 = $(basename "$R1")"
     echo "  R2 = $(basename "$R2")"
 
     fastqc -o "$output_dir" "$R1" "$R2"
 done
 
-# Now check unpaired reads
-
-echo ""
-echo "Running FastQC on unpaired reads (if any)..."
-
-for f in "$data_dir"/*unpaired*.fastq.gz; do
-    [[ -e "$f" ]] || continue
-    echo "  Unpaired: $(basename "$f")"
-    fastqc -o "$output_dir" "$f"
-done
-
 conda deactivate
+echo ""
+echo "Done."

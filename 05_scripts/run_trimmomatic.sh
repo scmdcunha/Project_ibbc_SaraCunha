@@ -46,7 +46,7 @@ echo "  Input FASTQ dir:    $data_dir"
 echo "  Output trimmed dir: $trim_dir"
 echo ""
 
-# --- Detect adapters inside the conda environment ---
+# Detect adapters inside the conda environment
 ADAPTERS=$(ls $CONDA_PREFIX/share/trimmomatic*/adapters/TruSeq3-PE.fa 2>/dev/null | head -n 1 || true)
 
 if [[ -z "$ADAPTERS" ]]; then
@@ -87,7 +87,7 @@ for R1 in "$data_dir"/*.fastq.gz; do
     out_R2="${trim_dir}/${sample}_2_trimmed.fastq.gz"
     out_unp_R2="${trim_dir}/${sample}_2_unpaired.fastq.gz"
 
-    # --- Final Trimmomatic Command (robust, universal, safe) ---
+    # Trimmomatic Command
     trimmomatic PE \
         -threads 4 \
         -phred33 \
@@ -95,10 +95,11 @@ for R1 in "$data_dir"/*.fastq.gz; do
         "$out_R1" "$out_unp_R1" \
         "$out_R2" "$out_unp_R2" \
         ILLUMINACLIP:"$ADAPTERS":2:30:10 \
+        HEADCROP: 12 \
         LEADING:3 \
         TRAILING:3 \
         SLIDINGWINDOW:4:20 \
-        MINLEN:50
+        MINLEN:36
 
     echo "Done: $sample"
     echo ""
