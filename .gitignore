@@ -1,18 +1,15 @@
 # Ignore raw data
 01_data/*
-!01_data/.gitkeep
 
-# Ignore metadata if needed (depende do teu caso)
+# Ignore metadata except config file
 02_metadata/*
-!02_metadata/.gitkeep
+!02_metadata/.trimming_config.txt
 
 # Ignore results
 03_results/*
-!03_results/.gitkeep
 
 # Ignore logs
 04_logs/*
-!04_logs/.gitkeep
 
 # Ignore editor clutter
 *.swp

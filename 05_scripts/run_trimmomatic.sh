@@ -29,28 +29,38 @@ env_name="tools_qc"
 data_dir="$1"
 trim_dir="$2"
 log_dir="04_logs/trimmomatic"
+config_file="02_metadata/trimming_config.txt"
 
 mkdir -p "$trim_dir" "$log_dir"
 
 timestamp=$(date +"%Y%m%d_%H%M%S")
 log_file="${log_dir}/trimmomatic_${timestamp}.log"
-
 exec > >(tee "$log_file") 2>&1
+
+# Load configuration
+if [[ ! -f "$config_file" ]]; then
+    echo "ERROR: Config file not found at $config_file"
+    exit 1
+fi
+
+echo "Loading trimming configuration from $config_file"
+source "$config_file"
+echo ""
 
 # Activate conda
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate "$env_name"
 
 echo "Running Trimmomatic"
-echo "  Input FASTQ dir:    $data_dir"
-echo "  Output trimmed dir: $trim_dir"
+echo "Input FASTQ dir:    $data_dir"
+echo "Output trimmed dir: $trim_dir"
 echo ""
 
 # Detect adapters inside the conda environment
 ADAPTERS=$(ls $CONDA_PREFIX/share/trimmomatic*/adapters/TruSeq3-PE.fa 2>/dev/null | head -n 1 || true)
 
 if [[ -z "$ADAPTERS" ]]; then
-    echo "ERROR: Could not find adapters file (TruSeq3-PE.fa) inside conda environment!"
+    echo "ERROR: Could not find TruSeq3-PE.fa in conda environment!"
     exit 1
 fi
 
@@ -60,7 +70,7 @@ echo ""
 # Loop over R1 files
 for R1 in "$data_dir"/*.fastq.gz; do
 
-    # Only process files containing R1-pattern
+    # detect R1 pattern
     if [[ "$R1" =~ R1 ]] || [[ "$R1" =~ _1 ]] || [[ "$R1" =~ -1 ]]; then
         :
     else
@@ -95,11 +105,11 @@ for R1 in "$data_dir"/*.fastq.gz; do
         "$out_R1" "$out_unp_R1" \
         "$out_R2" "$out_unp_R2" \
         ILLUMINACLIP:"$ADAPTERS":2:30:10 \
-        HEADCROP:12 \
-        LEADING:3 \
-        TRAILING:3 \
-        SLIDINGWINDOW:4:20 \
-        MINLEN:36
+        HEADCROP:${HEAD_CROP} \
+        LEADING:${LEADING_QUAL} \
+        TRAILING:${TRAILING_QUAL} \
+        SLIDINGWINDOW:${SLIDINGWINDOW} \
+        MINLEN:${MINLEN}
 
     echo "Done: $sample"
     echo ""
